@@ -1,0 +1,36 @@
+import { generateObject, NoObjectGeneratedError } from "ai";
+import type { z } from "zod";
+import { getOpenRouter } from "../do/dash-mail-ai";
+
+interface Igen<T> {
+  prompt: string;
+  model: string;
+  schema: z.ZodSchema<T>;
+  system?: string;
+}
+
+export const handleGenObject = async <T>(params: Igen<T>) => {
+  try {
+    const { model, prompt, schema, system } = params;
+    const openrouter = getOpenRouter();
+    const { object } = await generateObject({
+      model: openrouter.chat(model),
+      schema,
+      prompt: [{ role: "user", content: prompt }],
+      system,
+    });
+
+    return object;
+  } catch (e) {
+    handleNoObjectError(e);
+  }
+};
+
+export const handleNoObjectError = (error: unknown) => {
+  if (NoObjectGeneratedError.isInstance(error)) {
+    console.log("Cause:", error.cause);
+    console.log("Usage:", error.usage);
+  } else {
+    throw error;
+  }
+};

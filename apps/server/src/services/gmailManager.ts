@@ -1,48 +1,55 @@
 import { gmail_v1, gmail } from "@googleapis/gmail";
 import { OAuth2Tokens } from "better-auth";
-import { OAuth2Client } from "google-auth-library";
-import { getAccessToken } from "../utils/google";
+import { type Credentials, OAuth2Client } from "google-auth-library";
+import { getAccessToken } from "../utils/gmail-utils";
 
 export interface IGmailManagerConfig {
-  userId: string;
-  authTokens: OAuth2Tokens;
+  authTokens: Credentials;
+  clientId?: string;
+  clientSecret?: string;
 }
 
 export class GmailManager {
   gmailClient: gmail_v1.Gmail;
   auth: OAuth2Client;
+
   constructor(private config: IGmailManagerConfig) {
     this.auth = new OAuth2Client();
 
-    if (!this.config.authTokens.refreshToken) {
+   
+    if (!this.config.authTokens.refresh_token) {
       throw new Error("Missing refresh token");
     }
 
     this.auth.setCredentials({
-      access_token: this.config.authTokens.accessToken,
-      refresh_token: this.config.authTokens.refreshToken,
+      access_token: this.config.authTokens.access_token,
+      refresh_token: this.config.authTokens.refresh_token,
     });
 
-    this.refreshAccessToken(this.config.authTokens.refreshToken);
     this.gmailClient = gmail({ auth: this.auth, version: "v1" });
   }
 
-  async refreshAccessToken(refreshToken: string) {
-    const tokens = await getAccessToken(refreshToken);
+  async refreshAccessToken(
+    refreshToken: string,
+    clientId?: string,
+    clientSecret?: string
+  ) {
+    const tokens = await getAccessToken(refreshToken, clientId, clientSecret);
     this.auth.setCredentials({
       access_token: tokens.accessToken,
       refresh_token: refreshToken,
     });
+
     return tokens;
   }
 
-  async listThreads() {
+  async listThreads(labelIds: string[] = ["INBOX"], maxResults: number = 30) {
     try {
       const res = await this.gmailClient.users.threads.list({
         userId: "me",
         auth: this.auth,
-        labelIds: ["INBOX"],
-        maxResults: 30,
+        labelIds: labelIds,
+        maxResults: maxResults,
       });
 
       return res.data.threads;
@@ -84,13 +91,13 @@ export class GmailManager {
     }
   }
 
-  async getMessage(messageId: string) {
+  async getMessage(messageId: string, format: "full" | "raw") {
     try {
       const res = await this.gmailClient.users.messages.get({
         userId: "me",
         auth: this.auth,
         id: messageId,
-        format: "full",
+        format,
       });
       return res.data;
     } catch (e) {
@@ -114,5 +121,7 @@ export class GmailManager {
       throw new Error("failed to getAttachment");
     }
   }
-
+  getAuthTokens() {
+    return this.auth.credentials;
+  }
 }

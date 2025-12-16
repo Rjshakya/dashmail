@@ -1,57 +1,75 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "server",
-	"main": "src/app.ts",
-	"compatibility_date": "2025-12-13",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	"hyperdrive": [
-		{
-			"binding": "HYPERDRIVE",
-			"id": "12",
-			"localConnectionString": "postgresql://postgres:password@localhost:5432/postgres"
-		}
-	],
-	"r2_buckets": [
-		{
-			"bucket_name": "dashmail",
-			"binding": "DASHMAILBUCKET",
-			// "remote": true
-		}
-	],
-	"workflows": [{
-		"binding": "SYNC_AND_WATCH_MAIL_INBOX_WORKFLOW",
-		"class_name": "SyncAndWatchInboxMailsFlow",
-		"name": "sync-and-watch-inbox-mail"
-	}]
-	// "vars": {
-	//   "MY_VAR": "my-variable"
-	// },
-	// "kv_namespaces": [
-	//   {
-	//     "binding": "MY_KV_NAMESPACE",
-	//     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-	//   }
-	// ],
-	// "r2_buckets": [
-	//   {
-	//     "binding": "MY_BUCKET",
-	//     "bucket_name": "my-bucket"
-	//   }
-	// ],
-	// "d1_databases": [
-	//   {
-	//     "binding": "MY_DB",
-	//     "database_name": "my-database",
-	//     "database_id": ""
-	//   }
-	// ],
-	// "ai": {
-	//   "binding": "AI"
-	// },
-	// "observability": {
-	//   "enabled": true,
-	//   "head_sampling_rate": 1
-	// }
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "server",
+  "main": "src/app.ts",
+  "compatibility_date": "2025-12-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "12",
+      "localConnectionString": "postgresql://postgres:password@localhost:5432/postgres",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "bucket_name": "dashmail",
+      "binding": "DASHMAILBUCKET",
+      // "remote": true
+    },
+  ],
+  "workflows": [
+    {
+      "binding": "SYNC_AND_WATCH_MAIL_INBOX_WORKFLOW",
+      "class_name": "SyncAndWatchInboxMailsFlow",
+      "name": "sync-and-watch-inbox-mail",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "Mail_Thread",
+        "class_name": "MailThreadDO",
+      },
+      {
+        "name": "User_Mail_Inbox",
+        "class_name": "UserMailInboxDO",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["MailThreadDO", "UserMailInboxDO"],
+    },
+  ],
+  // "vars": {
+  //   "MY_VAR": "my-variable"
+  // },
+  // "kv_namespaces": [
+  //   {
+  //     "binding": "MY_KV_NAMESPACE",
+  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  //   }
+  // ],
+  // "r2_buckets": [
+  //   {
+  //     "binding": "MY_BUCKET",
+  //     "bucket_name": "my-bucket"
+  //   }
+  // ],
+  // "d1_databases": [
+  //   {
+  //     "binding": "MY_DB",
+  //     "database_name": "my-database",
+  //     "database_id": ""
+  //   }
+  // ],
+  // "ai": {
+  //   "binding": "AI"
+  // },
+  // "observability": {
+  //   "enabled": true,
+  //   "head_sampling_rate": 1
+  // }
 }
