@@ -28,11 +28,11 @@
   "durable_objects": {
     "bindings": [
       {
-        "name": "Mail_Thread",
+        "name": "MailThreadDO",
         "class_name": "MailThreadDO",
       },
       {
-        "name": "User_Mail_Inbox",
+        "name": "UserMailInboxDO",
         "class_name": "UserMailInboxDO",
       },
     ],

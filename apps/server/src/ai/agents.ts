@@ -1,18 +1,22 @@
 import { generateObject } from "ai";
-import { getOpenRouter } from "../do/dash-mail-ai";
-import { EmailSummariesSchema, InvoiceAgentOutputSchema } from "./schemas";
+import {
+  AnalysisSchema,
+  EmailSummariesSchema,
+  InvoiceAgentOutputSchema,
+} from "./schemas";
 import { handleGenObject, handleNoObjectError } from "../utils/ai-utils";
 import {
+  FinancialAgentSystemPrompt,
   InvoiceAgentSystemPrompt,
   SummariserAgentSystemPrompt,
 } from "./prompts";
 
-export const InvoiceAgent = async (prompt: string, model: string) => {
+export const FinancialAgent = async (prompt: string, model: string) => {
   const res = await handleGenObject({
     model,
     prompt,
-    schema: InvoiceAgentOutputSchema,
-    system: InvoiceAgentSystemPrompt,
+    schema: AnalysisSchema,
+    system: FinancialAgentSystemPrompt,
   });
   return res;
 };

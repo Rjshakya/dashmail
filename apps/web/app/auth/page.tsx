@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,8 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Chrome } from "lucide-react";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import { redirect } from "next/navigation";
 
 export default function AuthPage() {
+  const { data } = authClient.useSession();
   const handleSignIn = async () => {
     try {
       await signIn();
@@ -21,14 +24,16 @@ export default function AuthPage() {
     }
   };
 
+  if (data?.session.id) {
+    return redirect("/dashboard");
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4 ">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
-          <CardDescription>
-            Sign in to your account to continue
-          </CardDescription>
+          <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
@@ -50,4 +55,3 @@ export default function AuthPage() {
     </div>
   );
 }
-

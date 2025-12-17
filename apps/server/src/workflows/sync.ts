@@ -113,8 +113,8 @@ export class SyncAndWatchInboxMailsFlow extends WorkflowEntrypoint {
             console.error("no refresh-");
           }
 
-          const { id } = env.User_Mail_Inbox.getByName(`${userId}:mail_inbox`);
-          const stub = env.User_Mail_Inbox.get(id);
+          const { id } = env.UserMailInboxDO.getByName(`${userId}:mail_inbox`);
+          const stub = env.UserMailInboxDO.get(id);
           await stub.run({
             userId,
             accessToken: tokens?.accessToken as string,

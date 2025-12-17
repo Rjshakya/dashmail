@@ -1,6 +1,7 @@
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateObject, NoObjectGeneratedError } from "ai";
+import { env } from "cloudflare:workers";
 import type { z } from "zod";
-import { getOpenRouter } from "../do/dash-mail-ai";
 
 interface Igen<T> {
   prompt: string;
@@ -8,6 +9,11 @@ interface Igen<T> {
   schema: z.ZodSchema<T>;
   system?: string;
 }
+
+export const getOpenRouter = () =>
+  createOpenRouter({
+    apiKey: env.OPENROUTER_API_KEY,
+  });
 
 export const handleGenObject = async <T>(params: Igen<T>) => {
   try {

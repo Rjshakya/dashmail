@@ -2,18 +2,14 @@
  * run durable object for each mail thread
  */
 
-import { DurableObject } from "cloudflare:workers";
 import { GmailManager, IGmailManagerConfig } from "../services/gmailManager";
 import { gmail, gmail_v1 } from "@googleapis/gmail";
-import { OAuth2Client } from "google-auth-library";
 import { Agent, AgentContext } from "agents";
 import { execAsync } from "../utils/general";
 import { processGmailRawMessage } from "../utils/gmail-utils";
 import { Email } from "postal-mime";
-import { orchestrateAiFlow } from "./dash-mail-ai";
-import { pruneMessages } from "ai";
-import { SummariseThreadsAgent } from "../ai/agents";
-import { EmailSummaries } from "../ai/schemas";
+import { FinancialAgent, SummariseThreadsAgent } from "../ai/agents";
+import { AnalysisResult, EmailSummaries } from "../ai/schemas";
 
 export type IparsedMessage = Email & {
   threadId: string | null | undefined;
@@ -24,20 +20,40 @@ export type IparsedMessage = Email & {
 export class MailThreadDO extends Agent {
   async run(config: IGmailManagerConfig, userId: string, threadsIds: string[]) {
     return execAsync("run-MailThreadDO", async () => {
-      // await this.setConfig(userId, config);
-
       const threads = await this.serializeThreadsForLLM(threadsIds, config);
       if (!threads || threads.length < 5) return;
 
-      const summaries = await SummariseThreadsAgent(
-        threads,
-        "x-ai/grok-4.1-fast"
-      );
+      const promises = [
+        SummariseThreadsAgent(threads, "x-ai/grok-4.1-fast"),
+        FinancialAgent(threads, "x-ai/grok-4.1-fast"),
+      ];
 
-      if (summaries) {
-        console.log(summaries);
-        await this.putThreadBatchAISummary(userId, summaries);
+      const [summaries, financialAnalysis] = await Promise.all(promises);
+
+      // const summaries = await SummariseThreadsAgent(
+      //   threads,
+      //   "x-ai/grok-4.1-fast"
+      // );
+
+      // const financialAnalysis = await FinancialAgent(
+      //   threads,
+      //   "x-ai/grok-4.1-fast"
+      // );
+
+      if (summaries && "summaries" in summaries) {
+        await this.putThreadBatchAISummary(userId, summaries as EmailSummaries);
       }
+
+      if (financialAnalysis && "financialDocuments" in financialAnalysis) {
+        await this.putThreadFinancialAnalysis(
+          userId,
+          financialAnalysis as AnalysisResult
+        );
+      }
+      console.log(
+        "mail-thread-do-batch complete for a batch of",
+        threadsIds.length
+      );
     });
   }
 
@@ -59,7 +75,7 @@ export class MailThreadDO extends Agent {
             threadId: th?.[0].threadId,
             messages: th.map((m) => {
               if (!m) return `No message N/A`;
-              return this.parsedMessageInLLMformat(m);
+              return this.parsedMessageForLLMformat(m);
             }),
           });
         })
@@ -137,7 +153,7 @@ export class MailThreadDO extends Agent {
     });
   }
 
-  parsedMessageInLLMformat(msg: IparsedMessage) {
+  parsedMessageForLLMformat(msg: IparsedMessage) {
     const formatLabels = (labels: string[] | null | undefined): string => {
       return labels && labels.length > 0 ? labels.join(", ") : "None";
     };
@@ -181,14 +197,17 @@ export class MailThreadDO extends Agent {
     await this.ctx.storage.put(_key, summaries);
   }
 
-  async getThreadAiReport(threadId: string) {
-    const key = `${threadId}:reports`;
-    return await this.ctx.storage.get<any>(key);
+  async getThreadFinancialAnalysis(key: string) {
+    const _key = key + ":financials";
+    return await this.ctx.storage.get<AnalysisResult>(_key);
   }
 
-  async putThreadAiReport(threadId: string, data: any) {
-    const key = `${threadId}:reports`;
-    await this.ctx.storage.put(key, data);
+  async putThreadFinancialAnalysis(
+    key: string,
+    financialAnalysis: AnalysisResult
+  ) {
+    const _key = key + ":financials";
+    await this.ctx.storage.put(_key, financialAnalysis);
   }
 
   getGmailClient(config: IGmailManagerConfig) {

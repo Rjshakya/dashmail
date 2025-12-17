@@ -1,6 +1,9 @@
 {
   "name": "server",
   "type": "module",
+  "exports": {
+    ".": "./src/hc.ts"
+  },
   "scripts": {
     "dev": "wrangler dev --port 8000",
     "deploy": "wrangler deploy --minify",
