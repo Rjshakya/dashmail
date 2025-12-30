@@ -1,6 +1,4 @@
-type OnSuccess<T> =
-  | ((params: any, res: T) => void)
-  | ((params: any, res: T) => Promise<void>);
+type OnSuccess<T> = ((params: any, res: T) => void) | ((params: any, res: T) => Promise<void>);
 type OnError =
   | ((error: unknown, params: any) => void)
   | ((error: unknown, params: any) => Promise<void>);
@@ -10,7 +8,7 @@ export const execAsync = async <T>(
   callBack: (params?: any) => Promise<T>,
   params?: any,
   onSuccess?: OnSuccess<T>,
-  onError?: OnError
+  onError?: OnError,
 ): Promise<T> => {
   try {
     const res = await Promise.resolve(callBack(params));
@@ -21,4 +19,8 @@ export const execAsync = async <T>(
     console.error(`[${name}]:error`, e, ` with params:${params}`);
     throw new Error(`failed to execute ${name} , params:${params}`);
   }
+};
+
+export const sleep = (delay: number) => {
+  return new Promise((res) => setTimeout(res, delay));
 };

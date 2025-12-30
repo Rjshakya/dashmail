@@ -29,25 +29,27 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 ">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
+    <div className="flex min-h-screen items-center justify-center p-4  bg-muted">
+      <Card className="w-full max-w-md  tracking-tighter ">
+        <CardHeader className=" text-left gap-0 px-5 py-2">
+          <CardTitle className="text-2xl font-bold">Welcome to DashMail</CardTitle>
           <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className=" mt-4">
           <Button
             onClick={handleSignIn}
-            className="w-full"
+            className=" py-5"
             size="lg"
             variant="default"
           >
-            <Chrome className="mr-2 h-5 w-5" />
-            Sign in with Google
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="size-6 fill-white" viewBox="0 0 256 256"><path d="M228,128a100,100,0,1,1-22.86-63.64,12,12,0,0,1-18.51,15.28A76,76,0,1,0,203.05,140H128a12,12,0,0,1,0-24h88A12,12,0,0,1,228,128Z"></path></svg>
+            </span>
+            Continue with Google
           </Button>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
-          <p className="text-xs text-muted-foreground text-center">
+        <CardFooter className="px-6 py-3 bg-card">
+          <p className="text-xs text-muted-foreground text-left">
             By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
         </CardFooter>

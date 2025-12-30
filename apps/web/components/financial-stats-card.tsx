@@ -23,11 +23,13 @@ export function FinancialStatsCard({
   variant = "default",
 }: FinancialStatsCardProps) {
   return (
-    <Card className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-sm ${variantStyles[variant]}`}>
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
+    <Card
+      className={` col-span-full border rounded-lg py-2 px-4 transition-all duration-200 hover:shadow-sm ${variantStyles[variant]}`}
+    >
+      <div className="flex justify-between items-center gap-1">
+        <div className="flex  items-center gap-2">
           {icon && <div className="text-lg">{icon}</div>}
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <p className="text-xs font-medium text-muted-foreground tracking-wide">
             {label}
           </p>
         </div>

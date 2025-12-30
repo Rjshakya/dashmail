@@ -4,8 +4,7 @@ import { createDB } from "../db/config";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 export const getAuth = async () => {
-  const { CLIENT_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, HYPERDRIVE } =
-    env;
+  const { CLIENT_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, HYPERDRIVE } = env;
   const db = await createDB(HYPERDRIVE.connectionString);
 
   return betterAuth({
@@ -21,14 +20,44 @@ export const getAuth = async () => {
     },
     trustedOrigins: [CLIENT_URL],
     databaseHooks: {
-      session: {
+      // session: {
+      //   create: {
+      //     async after(session, context) {
+      //       try {
+      //         const now = new Date();
+      //         const yesterday = new Date();
+      //         yesterday.setDate(yesterday.getDate() - 1);
+      //         yesterday.setHours(0, 0, 0, 0);
+
+      //         await env.GenerateMailReportWorkflow.create({
+      //           id: session.id,
+      //           params: {
+      //             userId: session.userId,
+      //             after: yesterday,
+      //             before: now,
+      //           },
+      //         });
+      //       } catch (e) {
+      //         console.error("Error in session create after hook:", e);
+      //       }
+      //     },
+      //   },
+      // },
+      user: {
         create: {
-          async after(session, context) {
+          async after(user, context) {
             try {
-              await env.SYNC_AND_WATCH_MAIL_INBOX_WORKFLOW.create({
-                id: session.id,
+              const now = new Date();
+              const yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              yesterday.setHours(0, 0, 0, 0);
+
+              await env.GenerateMailReportWorkflow.create({
+                id: user.id,
                 params: {
-                  userId: session.userId,
+                  userId: user.id,
+                  after: yesterday,
+                  before: now,
                 },
               });
             } catch (e) {

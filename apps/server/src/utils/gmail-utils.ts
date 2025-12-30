@@ -1,18 +1,9 @@
 import { gmail_v1 } from "@googleapis/gmail";
 import { env } from "cloudflare:workers";
 import PostalMime from "postal-mime";
-
-export interface IProcessedGmailMessagePayload {
-  subject: string | null | undefined;
-  from: string | null | undefined;
-  to: string | null | undefined;
-  body: string;
-  attachmentUrls: string[];
-  threadId: string | null | undefined;
-  snippet: string | null | undefined;
-  date: string | null | undefined;
-  internalDate: Date | null;
-}
+import * as cheerio from "cheerio";
+import { IparsedMessage } from "../do/thread.do";
+import { GmailManager } from "../services/gmailManager";
 
 export const getAccessToken = async (
   refreshToken: string,
@@ -20,8 +11,6 @@ export const getAccessToken = async (
   clientSecret?: string
 ) => {
   try {
-    console.log("[getAccessToken]", clientId);
-
     const body = {
       client_id: clientId ?? env.GOOGLE_CLIENT_ID,
       client_secret: clientSecret ?? env.GOOGLE_CLIENT_SECRET,
@@ -61,22 +50,26 @@ export const processGmailRawMessage = async (raw: string) => {
   }
 };
 
-export const processGmailMessagePayload = async (
+export const processGmailMessage = async (
   message: gmail_v1.Schema$Message,
-  gmailClient: gmail_v1.Gmail,
-  userId: string
-) => {
+  gmailClient: GmailManager,
+  userId: string | undefined
+): Promise<IparsedMessage | undefined> => {
   const processMessageParts = (
     parts: gmail_v1.Schema$MessagePart[] | undefined
   ) => {
     if (!parts || parts.length === 0) return;
+
     for (const part of parts) {
       if (part.mimeType === "text/plain" && part.body && part.body.data) {
-        return part.body.data;
+        const decoded = Buffer.from(part.body.data, "base64url").toString();
+        return decoded.trim().replace(/\s+/g, " ");
       }
 
       if (part.mimeType === "text/html" && part.body && part.body.data) {
-        return part.body.data;
+        const decoded = Buffer.from(part.body.data, "base64url").toString();
+        const $ = cheerio.load(decoded);
+        return $("body").text().trim().replace(/\s+/g, " ");
       }
 
       if (part.parts && part.parts.length > 0) {
@@ -94,26 +87,27 @@ export const processGmailMessagePayload = async (
       let attachmentUrls: string[] = [];
 
       for (const part of parts) {
-        const attachment = await gmailClient.users.messages.attachments.get({
-          userId: "me",
-          messageId,
-          id: part.body?.attachmentId || "",
-        });
+        if (!part.body?.attachmentId) continue;
 
-        const fileDate = attachment.data.data;
-        if (attachment.data.size && attachment.data.size > 50 * 1024 * 1024) {
+        const attachment = await gmailClient.getAttachment(
+          messageId,
+          part.body.attachmentId
+        );
+
+        const fileDate = attachment.data;
+        if (attachment.size && attachment.size > 5 * 1024 * 1024) {
           console.log(
-            "Attachment size exceeds 50MB, skipping download for:",
+            "Attachment size exceeds 5MB, skipping download for:",
             part.filename
           );
           continue;
         }
         const fileBuffer = fileDate ? Buffer.from(fileDate, "base64") : null;
-        const key = `${userId}attachments/${message.threadId}/${message.id}/${part.filename}`;
+        const key = `${userId}/attachments/${message.threadId}/${message.id}/${part.filename}`;
 
         const result = await env.DASHMAILBUCKET.put(key, fileBuffer, {
           customMetadata: {
-            userId,
+            userId: userId || "dashMail",
             messageId: message.id || "",
             filename: part.filename || "",
           },
@@ -123,9 +117,10 @@ export const processGmailMessagePayload = async (
           env.NODE_ENV === "production" ? env.R2_PROD_URL : env.R2_DEV_URL;
         attachmentUrls.push(r2_url + "/" + result.key);
       }
+
       return attachmentUrls;
     } catch (e) {
-      throw new Error("failed to process-attachments");
+      console.error("failed to process-attachments");
     }
   };
 
@@ -135,16 +130,9 @@ export const processGmailMessagePayload = async (
     const subject = message.payload.headers.find(
       (h) => h.name === "Subject"
     )?.value;
-
     const from = message.payload.headers.find((h) => h.name === "From")?.value;
-
     const to = message.payload.headers.find((h) => h.name === "To")?.value;
-
-    const snippet = message.snippet;
     const date = message.payload.headers.find((h) => h.name === "Date")?.value;
-    const internalDate = message.internalDate
-      ? new Date(parseInt(message.internalDate))
-      : null;
 
     const attachments = (message.payload.parts || [])?.filter(
       (p) => p.filename && p.body?.attachmentId
@@ -155,15 +143,10 @@ export const processGmailMessagePayload = async (
       message.payload.parts.length > 0 &&
       processMessageParts(message.payload.parts);
 
-    let text = "";
-
-    if (body) {
-      text = Buffer.from(body, "base64").toString("utf-8");
-    }
-
     let attachmentUrls: string[] = [];
     if (attachments && attachments.length > 0) {
-      attachmentUrls = await processAttachments(attachments, message.id || "");
+      attachmentUrls =
+        (await processAttachments(attachments, message.id || "")) ?? [];
       console.log("Attachment URLs:", attachmentUrls);
     }
 
@@ -171,13 +154,13 @@ export const processGmailMessagePayload = async (
       subject,
       from,
       to,
-      body: text,
-      attachmentUrls,
       threadId: message.threadId,
-      snippet,
       date,
-      internalDate,
-    } satisfies IProcessedGmailMessagePayload;
+      attachments: attachmentUrls,
+      text: body || "",
+      labels: message.labelIds,
+      messageId: message.id,
+    };
   } catch (e) {
     throw new Error("failed to process-message");
   }

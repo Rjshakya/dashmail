@@ -16,7 +16,6 @@ export class GmailManager {
   constructor(private config: IGmailManagerConfig) {
     this.auth = new OAuth2Client();
 
-   
     if (!this.config.authTokens.refresh_token) {
       throw new Error("Missing refresh token");
     }
@@ -121,6 +120,34 @@ export class GmailManager {
       throw new Error("failed to getAttachment");
     }
   }
+
+  async listThreadBasedOnTime(params: {
+    labelIds: string[];
+    maxResults: number;
+    after: Date;
+    before: Date;
+    pageToken?: string | undefined;
+  }) {
+    const {
+      labelIds = ["INBOX"],
+      maxResults = 50,
+      pageToken,
+      after,
+      before,
+    } = params;
+
+    const res = await this.gmailClient.users.threads.list({
+      userId: "me",
+      labelIds,
+      maxResults,
+      auth: this.auth,
+      pageToken,
+      q: `after:${Math.floor(after.getTime() / 1000)} before:${Math.floor(before.getTime() / 1000)}`,
+    });
+
+    return res.data;
+  }
+
   getAuthTokens() {
     return this.auth.credentials;
   }

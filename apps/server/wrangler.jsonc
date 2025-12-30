@@ -15,34 +15,61 @@
     {
       "bucket_name": "dashmail",
       "binding": "DASHMAILBUCKET",
-      // "remote": true
+      "remote": true,
     },
   ],
   "workflows": [
+    // {
+    // 	"binding": "SYNC_AND_WATCH_MAIL_INBOX_WORKFLOW",
+    // 	"class_name": "SyncAndWatchInboxMailsFlow",
+    // 	"name": "sync-and-watch-inbox-mail",
+    // },
     {
-      "binding": "SYNC_AND_WATCH_MAIL_INBOX_WORKFLOW",
-      "class_name": "SyncAndWatchInboxMailsFlow",
-      "name": "sync-and-watch-inbox-mail",
+      "binding": "GenerateMailReportWorkflow",
+      "class_name": "GenerateMailReportWorkflow",
+      "name": "generate_mail_report_workflow",
+    },
+    {
+      "binding": "MailScheduleWorkflow",
+      "class_name": "MailScheduleWorkflow",
+      "name": "mail_schedule_workflow",
     },
   ],
   "durable_objects": {
     "bindings": [
       {
-        "name": "MailThreadDO",
-        "class_name": "MailThreadDO",
+        "name": "Threads",
+        "class_name": "Threads",
       },
       {
-        "name": "UserMailInboxDO",
-        "class_name": "UserMailInboxDO",
+        "name": "MailInbox",
+        "class_name": "MailInbox",
       },
     ],
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["MailThreadDO", "UserMailInboxDO"],
+      "new_sqlite_classes": ["Threads", "MailInbox"],
     },
   ],
+  "kv_namespaces": [
+    {
+      "binding": "MAIL_INBOX_KV",
+      "id": "7b0eeaf5827a4b219c4524602b552834",
+    },
+  ],
+  "queues": {
+    "consumers": [
+      { "queue": "email-queue", "max_batch_size": 90, "max_batch_timeout": 2 },
+    ],
+    "producers": [
+      {
+        "queue": "email-queue",
+        "binding": "EMAIL_QUEUE",
+      },
+    ],
+  },
   // "vars": {
   //   "MY_VAR": "my-variable"
   // },
