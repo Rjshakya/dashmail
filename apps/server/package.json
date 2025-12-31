@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.0",
     "@ai-sdk/xai": "^3.0.0",
+    "@googleapis/calendar": "^14.2.0",
     "@googleapis/gmail": "^16.1.1",
     "@hono/zod-validator": "^0.7.5",
     "@openrouter/ai-sdk-provider": "^1.5.4",

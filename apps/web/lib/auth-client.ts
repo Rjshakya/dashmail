@@ -8,7 +8,10 @@ export const signIn = async () => {
   await authClient.signIn.social({
     provider: "google",
     callbackURL: process.env.NEXT_PUBLIC_CLIENT_URL + "/dashboard",
-    scopes: ["https://www.googleapis.com/auth/gmail.modify"],
+    scopes: [
+      "https://www.googleapis.com/auth/gmail.modify",
+      "https://www.googleapis.com/auth/calendar",
+    ],
   });
 };
 

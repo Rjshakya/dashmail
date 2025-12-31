@@ -243,7 +243,7 @@ export class MailInbox extends Agent {
       after.setHours(0, 0, 0, 0);
       const before = new Date();
 
-      const id = userId + before.toISOString().split("T")[0] + 6;
+      const id = crypto.randomUUID();
 
       await this.env.MailScheduleWorkflow.create({
         id,

@@ -11,6 +11,7 @@ import { AggregatorAgent } from "../ai/aggregator/agent";
 import { unosendEmail } from "../utils/email";
 import { saveUIData } from "../utils/mail-inbox-kv";
 import { SendEmailOptions } from "@unosend/node";
+import { openRouterModels } from "../utils/models";
 
 export interface IMailScheduleWorkflow {
   userId: string;
@@ -87,7 +88,20 @@ export class MailScheduleWorkflow extends WorkflowEntrypoint {
       return execAsync("[MailScheduleWorkflow]:gen-final-message", async () => {
         if (!runMailEngine || !runMailEngine.fullReport) return;
 
-        const res = await AggregatorAgent(runMailEngine?.fullReport, "x-ai/grok-4.1-fast");
+        const { id } = env.GmailAgent.getByName(`${userId}`);
+        const stub = env.GmailAgent.get(id);
+        const res = await stub.run({
+          model: openRouterModels["grok4.1"],
+          prompt: runMailEngine?.fullReport,
+          tokens: {
+            access_token: freshCredentials?.accessToken,
+            refresh_token: freshCredentials?.refreshToken,
+          },
+        });
+
+        // const res = await AggregatorAgent(runMailEngine?.fullReport, "x-ai/grok-4.1-fast");
+        // return res;
+
         return res;
       });
     });
@@ -105,16 +119,19 @@ export class MailScheduleWorkflow extends WorkflowEntrypoint {
           userId,
           24 * 60 * 60,
         );
+        console.log("save-ui-date:complete");
       });
     });
 
     await step.do("send-mail", async () => {
       return execAsync("[MailScheduleWorkflow]:step:sendMail", async () => {
         if (!finalMessage || !userCredentials.email) return;
+        console.log(finalMessage);
+
         await env.EMAIL_QUEUE.send(
           {
             to: userCredentials.email,
-            text: finalMessage.personalisedMessage || "",
+            text: finalMessage || "",
           },
           { delaySeconds: 1 },
         );

@@ -19,16 +19,12 @@ export interface IkvPair {
 
 export const saveUIData = async (params: IUIData, userId: string, expiration_ttl?: number) => {
   const kvPairs = Object.entries(params).map(([k, v]) => {
-    console.log(v);
-
     return {
       key: `dashmail:${userId}:${k}`,
       value: JSON.stringify(v, null, 2) || "[]",
       expiration_ttl,
     } satisfies IkvPair;
   });
-
-  console.log(kvPairs);
 
   await kvBulkWrite(kvPairs, "7b0eeaf5827a4b219c4524602b552834");
 };
@@ -70,8 +66,6 @@ export const getUIData = async (userId: string) => {
 
 const kvBulkWrite = async (kvPairs: IkvPair[], namespaceID: string) => {
   return execAsync("kvBulkWrite", async () => {
-    console.log("body", JSON.stringify(kvPairs));
-
     const res = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACC_ID}/storage/kv/namespaces/${namespaceID}/bulk`,
       {
@@ -85,9 +79,8 @@ const kvBulkWrite = async (kvPairs: IkvPair[], namespaceID: string) => {
     );
 
     if (!res.ok) {
-      console.log(res.status);
-      console.log(res.statusText);
-
+      console.error(res.status);
+      console.error(res.statusText);
       throw new Error("failed to kvBulkWrite");
     }
 
@@ -109,7 +102,11 @@ const kvBulkRead = async (keys: string[], namespaceID: string) => {
       },
     );
 
-    if (!res.ok) return;
+    if (!res.ok) {
+      console.error(res.status);
+      console.error(res.statusText);
+      throw new Error("failed to kvBulkRead");
+    }
     const json = (await res.json()) as any;
     return json;
   });

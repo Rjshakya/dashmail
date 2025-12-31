@@ -11,6 +11,7 @@ import { SummariseThreadsAgent } from "../ai/summary/agent";
 import { FinancialAgent } from "../ai/finance/agent";
 import { AnalysisResult } from "../ai/finance/schema";
 import { EmailSummaries } from "../ai/summary/schema";
+import { openRouterModels } from "../utils/models";
 
 export type IparsedMessage = {
   messageId: string | null | undefined;
@@ -41,8 +42,8 @@ export class Threads extends Agent {
 
       if (!threads || threads.length < 2) return;
       const promises = [
-        SummariseThreadsAgent(threads, "x-ai/grok-4.1-fast"),
-        FinancialAgent(threads, "x-ai/grok-4.1-fast"),
+        SummariseThreadsAgent(threads, openRouterModels["grok4.1"]),
+        FinancialAgent(threads, openRouterModels["grok4.1"]),
       ];
 
       const [summaries, financialAnalysis] = await Promise.all(promises);

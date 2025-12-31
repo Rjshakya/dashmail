@@ -2,18 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertCircle,
-  TrendingUp,
-  AlertTriangle,
-  ChevronsUpDown,
-} from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { AlertCircle, TrendingUp, AlertTriangle, ChevronsUpDown } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -82,23 +72,17 @@ function formatCurrency(amount: number, currency: string): string {
   }
 }
 
-export function FinancialDocumentCard({
-  document,
-}: {
-  document: Record<string, unknown>;
-}) {
+export function FinancialDocumentCard({ document }: { document: Record<string, unknown> }) {
   // Safe property access with defaults
   const amount = (document?.amount as number) ?? 0;
   const currency = (document?.currency as string) ?? "USD";
   const merchantName =
-    ((document?.merchant as Record<string, unknown>)?.name as string) ??
-    "Unknown Merchant";
+    ((document?.merchant as Record<string, unknown>)?.name as string) ?? "Unknown Merchant";
   const paymentStatus = ((document?.paymentStatus as string) ??
     "pending") as keyof typeof paymentStatusColors;
   const documentType = ((document?.documentType as string) ??
     "other") as keyof typeof documentTypeLabels;
-  const priority = ((document?.priority as string) ??
-    "medium") as keyof typeof priorityColors;
+  const priority = ((document?.priority as string) ?? "medium") as keyof typeof priorityColors;
   const confidenceScore = (document?.confidenceScore as number) ?? 0;
   const emailDate = (document?.emailDate as string) ?? new Date().toISOString();
   const description = (document?.description as string) ?? "No description";
@@ -122,14 +106,15 @@ export function FinancialDocumentCard({
 
   return (
     <TooltipProvider>
-      <Card className={`ring-0 border ${expand ? "pb-4" : "pb-0"}`}>
+      <Card
+        onClick={() => setExpand(!expand)}
+        className={`bg-muted transition-all duration-200 my-2 border-2 ring-0 cursor-pointer ${expand ? "pb-4" : "pb-0"}`}
+      >
         <CardHeader className="">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2">
-                <CardTitle className="text-base line-clamp-2">
-                  {merchantName}
-                </CardTitle>
+                <CardTitle className="text-base line-clamp-2">{merchantName}</CardTitle>
                 {requiresAction && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -139,9 +124,7 @@ export function FinancialDocumentCard({
                   </Tooltip>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground line-clamp-1">
-                {description}
-              </p>
+              <p className="text-xs text-muted-foreground line-clamp-1">{description}</p>
             </div>
 
             <div className="flex flex-col gap-2 items-end">
@@ -176,20 +159,16 @@ export function FinancialDocumentCard({
                   <Badge
                     variant="secondary"
                     className={`text-xs ${
-                      paymentStatusColors[
-                        paymentStatus as keyof typeof paymentStatusColors
-                      ] || paymentStatusColors.pending
+                      paymentStatusColors[paymentStatus as keyof typeof paymentStatusColors] ||
+                      paymentStatusColors.pending
                     }`}
                   >
-                    {paymentStatus.charAt(0).toUpperCase() +
-                      paymentStatus.slice(1)}
+                    {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
                   </Badge>
 
                   <Badge
                     variant="secondary"
-                    className={`text-xs ${
-                      priorityColors[priority as keyof typeof priorityColors]
-                    }`}
+                    className={`text-xs ${priorityColors[priority as keyof typeof priorityColors]}`}
                   >
                     {priority.charAt(0).toUpperCase() + priority.slice(1)}
                   </Badge>
@@ -248,9 +227,7 @@ export function FinancialDocumentCard({
                   <div className="bg-muted/50 rounded-lg p-3 border border-border/50">
                     <div className="flex gap-2 items-center">
                       <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {notes}
-                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{notes}</p>
                     </div>
                   </div>
                 )}

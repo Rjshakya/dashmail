@@ -3,9 +3,6 @@ import { NoObjectGeneratedError, APICallError, TypeValidationError, generateObje
 import { env } from "cloudflare:workers";
 import { z } from "zod/v3";
 import { createFallback } from "ai-fallback";
-import { createAiGateway } from "ai-gateway-provider";
-import { createXai } from "@ai-sdk/xai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 interface Igen<T> {
   prompt: string;
@@ -23,14 +20,8 @@ export const handleGenObject = async <T>(params: Igen<T>) => {
   try {
     const { model, prompt, schema, system } = params;
 
-    // const aiGateway = createAiGateway({
-    //   gateway: "dash-mail-gateway",
-    //   accountId: env.CF_ACC_ID,
-    //   apiKey: env.CF_AI_GATEWAY_TOKEN,
-    // });
-
     const { object } = await generateObject({
-      model: createModelWithFallback(model),
+      model: getModelWithFallback(model),
       schema,
       prompt,
       system,
@@ -68,9 +59,11 @@ export const handleNoObjectError = (error: unknown) => {
   throw error;
 };
 
-export const createModelWithFallback = (primaryModel: string) => {
+export const getModelWithFallback = (primaryModel: string) => {
   const openrouter = getOpenRouter();
+
   const model = createFallback({
+    // @ts-ignore
     models: [openrouter.chat(primaryModel), openrouter.chat("x-ai/grok-4-fast")],
   });
 

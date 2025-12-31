@@ -23,11 +23,7 @@ interface ThreadSummary {
   keyPoints: string[];
   actionItems: ActionItem[];
   decisions: string[];
-  status:
-    | "action_required"
-    | "awaiting_response"
-    | "resolved"
-    | "informational";
+  status: "action_required" | "awaiting_response" | "resolved" | "informational";
   priority: "high" | "medium" | "low";
   sentiment: "urgent" | "positive" | "neutral" | "negative";
   tags: string[];
@@ -85,18 +81,11 @@ export function SummaryCard({ summary }: { summary: ThreadSummary }) {
 
   return (
     <Card
-      className={`transition-all duration-200 my-2 border ring-0 ${expand ? "py-4" : "pb-0 pt-4"}`}
+      onClick={() => setExpand(!expand)}
+      className={`bg-muted transition-all duration-200 my-2 border-2 ring-0 cursor-pointer ${expand ? "py-4" : "pb-0 pt-4"}`}
     >
       <CardHeader className="pb-3">
-        <div className="flex flex-col items-start justify-between gap-3">
-          <div className="flex items-center justify-between gap-2 w-full">
-            <CardTitle className="text-base line-clamp-2 text-balance font-medium w-full  ">
-              <p className=" max-w-xs">{summary.subject}</p>
-            </CardTitle>
-
-            <div className="">{statusIcons[summary.status]}</div>
-          </div>
-          {/* <Separator /> */}
+        <div className="flex flex-col items-start justify-between gap-1">
           <div className=" flex items-center justify-between w-full gap-2 ">
             <div>
               <p className="text-xs text-muted-foreground">{formattedDate}</p>
@@ -105,9 +94,7 @@ export function SummaryCard({ summary }: { summary: ThreadSummary }) {
               <Badge
                 variant="secondary"
                 className={`text-xs ${
-                  priorityColors[
-                    summary.priority as keyof typeof priorityColors
-                  ]
+                  priorityColors[summary.priority as keyof typeof priorityColors]
                 }`}
               >
                 {summary.priority}
@@ -115,25 +102,30 @@ export function SummaryCard({ summary }: { summary: ThreadSummary }) {
               <Badge
                 variant="secondary"
                 className={`text-xs ${
-                  sentimentColors[
-                    summary.sentiment as keyof typeof sentimentColors
-                  ]
+                  sentimentColors[summary.sentiment as keyof typeof sentimentColors]
                 }`}
               >
                 {summary.sentiment}
               </Badge>
               <Badge
-                className=" cursor-pointer select-auto active:translate-y-0.5 transition-all duration-300 ease-in-out "
+                className="size-5 grid place-content-center cursor-pointer select-auto active:translate-y-0.5 transition-all duration-300 ease-in-out"
                 onClick={() => setExpand(!expand)}
               >
-                <ChevronsUpDown />
+                <ChevronsUpDown className="size-2" />
               </Badge>
             </div>
+          </div>
+          <div className="flex items-center justify-between gap-2 w-full">
+            <CardTitle className="text-base line-clamp-2 text-balance font-medium w-full  ">
+              <p className=" max-w-xs">{summary.subject}</p>
+            </CardTitle>
+
+            {/* <div className="">{statusIcons[summary.status]}</div> */}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="">
         <motion.div layout className="grid gap-3">
           <AnimatePresence>
             {expand && (
@@ -148,24 +140,17 @@ export function SummaryCard({ summary }: { summary: ThreadSummary }) {
               >
                 {/* Summary */}
                 <motion.div layout>
-                  <p className="text-sm text-muted-foreground">
-                    {summary.summary}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{summary.summary}</p>
                 </motion.div>
 
                 {/* Key Points */}
                 {summary.keyPoints.length > 0 && (
                   <motion.div layout className="space-y-2">
-                    <p className="text-xs font-semibold text-muted-foreground">
-                      Key Points
-                    </p>
+                    <p className="text-xs font-semibold text-muted-foreground">Key Points</p>
                     <motion.ul layout className="text-xs space-y-1">
                       <AnimatePresence>
                         {summary.keyPoints
-                          .slice(
-                            0,
-                            expandKeyPoints ? summary.keyPoints.length : 2
-                          )
+                          .slice(0, expandKeyPoints ? summary.keyPoints.length : 2)
                           .map((point, idx) => (
                             <motion.li
                               layout // Smoothly moves the item to its new position
@@ -179,12 +164,8 @@ export function SummaryCard({ summary }: { summary: ThreadSummary }) {
                               }}
                               className="flex items-start gap-2"
                             >
-                              <span className="text-muted-foreground mt-1">
-                                •
-                              </span>
-                              <span className="text-muted-foreground line-clamp-2">
-                                {point}
-                              </span>
+                              <span className="text-muted-foreground mt-1">•</span>
+                              <span className="text-muted-foreground line-clamp-2">{point}</span>
                             </motion.li>
                           ))}
                       </AnimatePresence>
@@ -193,9 +174,7 @@ export function SummaryCard({ summary }: { summary: ThreadSummary }) {
                           onClick={() => setExpandKeyPoints(!expandKeyPoints)}
                           className="text-xs text-blue-600 dark:text-blue-400 cursor-pointer"
                         >
-                          {expandKeyPoints
-                            ? "close"
-                            : `+${summary.keyPoints.length - 2} more`}
+                          {expandKeyPoints ? "close" : `+${summary.keyPoints.length - 2} more`}
                         </motion.li>
                       )}
                     </motion.ul>
@@ -269,11 +248,7 @@ export function SummaryCard({ summary }: { summary: ThreadSummary }) {
                     <>
                       <div className=" flex flex-wrap gap-1">
                         {summary.tags.slice(0, 3).map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="text-xs"
-                          >
+                          <Badge key={tag} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
                         ))}

@@ -285,19 +285,19 @@ export const Dashboard = () => {
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="w-full sticky top-0 z-20 transition-all "
+        className="w-full   transition-all "
         defaultValue="Highlights"
         orientation="horizontal"
       >
         {/* --- NAVIGATION --- */}
-        <TabsList className="relative grid w-full grid-cols-2 rounded-full border ">
+        <TabsList className=" grid w-full grid-cols-2 rounded-full border">
           {["Highlights", "Invoices"].map((tab) => (
             <TabsTrigger
               key={tab}
               value={tab}
-              className="z-10 rounded-full h-9  bg-transparent transition-colors data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+              className=" rounded-full h-9  bg-transparent transition-colors data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
             >
-              <span className="capitalize text-sm font-medium relative z-20">{tab}</span>
+              <span className="capitalize text-sm font-medium relative">{tab}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -313,7 +313,7 @@ export const Dashboard = () => {
           >
             {activeTab === "Highlights" && (
               <TabsContent value="Highlights" forceMount className="mt-0">
-                <ScrollArea className="h-90 md:h-120 py-2">
+                <ScrollArea className=" py-2">
                   {isLoading ? (
                     <ReportGridSkeleton count={6} />
                   ) : summaries.length > 0 ? (
@@ -358,7 +358,7 @@ export const Dashboard = () => {
                     </motion.div>
                   )}
 
-                  <ScrollArea className="h-80 py-2">
+                  <ScrollArea className="h-120 py-2">
                     <div className="space-y-2">
                       {financialDocuments.length > 0 && (
                         <div className="flex items-center justify-between px-1">

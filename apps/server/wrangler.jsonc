@@ -45,12 +45,16 @@
         "name": "MailInbox",
         "class_name": "MailInbox",
       },
+      {
+        "name": "GmailAgent",
+        "class_name": "GmailAgent"
+      }
     ],
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["Threads", "MailInbox"],
+      "new_sqlite_classes": ["Threads", "MailInbox" , "GmailAgent"],
     },
   ],
   "kv_namespaces": [

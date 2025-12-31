@@ -28,11 +28,7 @@ export class GmailManager {
     this.gmailClient = gmail({ auth: this.auth, version: "v1" });
   }
 
-  async refreshAccessToken(
-    refreshToken: string,
-    clientId?: string,
-    clientSecret?: string
-  ) {
+  async refreshAccessToken(refreshToken: string, clientId?: string, clientSecret?: string) {
     const tokens = await getAccessToken(refreshToken, clientId, clientSecret);
     this.auth.setCredentials({
       access_token: tokens.accessToken,
@@ -128,13 +124,7 @@ export class GmailManager {
     before: Date;
     pageToken?: string | undefined;
   }) {
-    const {
-      labelIds = ["INBOX"],
-      maxResults = 50,
-      pageToken,
-      after,
-      before,
-    } = params;
+    const { labelIds = ["INBOX"], maxResults = 50, pageToken, after, before } = params;
 
     const res = await this.gmailClient.users.threads.list({
       userId: "me",

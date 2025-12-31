@@ -16,6 +16,7 @@ import { getUIData } from "./utils/mail-inbox-kv";
 import { SendEmailOptions } from "@unosend/node";
 import { unosendEmail } from "./utils/email";
 import { useRateLimit } from "./utils/ratelimit";
+import { GmailAgent } from "./ai/gmail/agent";
 
 type Variables = {
   userId: string;
@@ -127,7 +128,8 @@ const app = new Hono<{ Variables: Variables }>()
     return c.json({ message: "Internal Server Error", details: err.message }, 500);
   });
 
-export { Threads, MailInbox, GenerateMailReportWorkflow, MailScheduleWorkflow };
+ 
+export { Threads, MailInbox, GenerateMailReportWorkflow, MailScheduleWorkflow ,  GmailAgent };
 export default {
   fetch: app.fetch,
   async queue(batch: MessageBatch<IEmailQueueMsg>, env: Cloudflare.Env) {
